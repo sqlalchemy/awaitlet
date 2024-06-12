@@ -26,7 +26,9 @@ from an echo server.  The program is organized into three layers:
 * ``send_receive_api`` - this is the front-facing API that is used by programs.
 
 We present this example below, adding a ``main()`` function that spins up
-five threads and calls upon ``send_receive_api()`` independently within each::
+five threads and calls upon ``send_receive_api()`` independently within each:
+
+.. sourcecode:: python
 
     import socket
     import threading
@@ -66,7 +68,9 @@ five threads and calls upon ``send_receive_api()`` independently within each::
 
 The goal we have now is to provide an all-new asynchronous API to this program.
 That is, we want to remove the use of threads, and instead have calling code which
-looks like this::
+looks like this:
+
+.. sourcecode:: python
 
     async def main():
         messages = await asyncio.gather(
@@ -94,7 +98,9 @@ within an overall asyncio context.    We can port our program above by:
 * Writing a new ``send_receive_api`` that uses asyncio
 * Writing a sync adapter that can be passed along to ``send_receive_logic``
 
-This program then looks like::
+This program then looks like:
+
+.. sourcecode:: python
 
     import asyncio
     import awaitlet
