@@ -104,7 +104,6 @@ This program then looks like:
 
     import asyncio
     import awaitlet
-    import functools
 
 
     async def async_send_receive_implementation(host, port, message):
