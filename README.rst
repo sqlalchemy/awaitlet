@@ -7,10 +7,8 @@ Allow non-async defs that invoke awaitables inside of asyncio applications.
 awaitlet allows existing programs written to use threads and blocking
 APIs to be ported to asyncio, by replacing frontend and backend code with
 asyncio compatible approaches, but allowing intermediary code to remain
-completely unchanged.  Its primary use is to
-**port existing blocking style code to asyncio, while allowing that blocking
-style code to still be usable in a blocking context as well**.
-
+completely unchanged.  Its primary use is to support code that is cross-compatible
+with asyncio and non-asyncio runtime environments.
 
 
 Synopsis
@@ -116,7 +114,6 @@ This program then looks like::
     def send_receive_logic(msg, host, port, implementation):
         return implementation(host, port, f"message number {msg}\n")
 
-
     async def send_receive_api(msg):
         def adapt_async_implementation(host, port, message):
             return awaitlet.awaitlet(
@@ -146,4 +143,5 @@ This program then looks like::
 
 Above, the front end and back end are ported to asyncio, but the
 **middle part stays the same**.  That's the point of awaitlet; **to eliminate
-the async/await keyword tax when porting**.
+the async/await keyword tax applied to code that doesnt directly invoke
+non-blocking functions.**.
