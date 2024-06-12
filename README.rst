@@ -147,3 +147,18 @@ middle part stays the same; that is, the ``send_receive_logic()`` function
 **did not change at all, no async/await keywords needed**.  That's the point of awaitlet; **to eliminate
 the async/await keyword tax applied to code that doesnt directly invoke
 non-blocking functions.**.
+
+How does this work?
+===================
+
+The context shift feature of the Python ``await`` keyword is made available in a functional 
+way using the `greenlet <https://pypi.org/project/greenlet/>` library.
+
+Has anyone used this before?
+============================
+
+Are you using `SQLAlchemy with asyncio <https://docs.sqlalchemy.org/en/latest/orm/extensions/asyncio.html>` anywhere?   Then **you're using it right now**.
+awaitlet is a port of SQLAlchemy's own greenlet/asyncio mediation layer pulled into its own package, with no
+dependencies on SQLAlchemy.   This code has been in widespread production use in thousands of environments for several
+years, starting in 2020 with SQLAlchemy 1.4's first release.
+
