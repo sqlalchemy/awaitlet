@@ -2,68 +2,143 @@
 awaitlet
 ========
 
-Call Python asyncio awaitables from functions that are not declared
-as async.
+Allow non-async defs that invoke awaitables inside of asyncio applications.
+
+awaitlet allows existing programs written to use threads and blocking
+APIs to be ported to asyncio, by replacing frontend and backend code with
+asyncio compatible approaches, but allowing intermediary code to remain
+completely unchanged.  It is most primarily a library that exists to
+**port existing blocking style code to asyncio, while allowing that blocking
+style code to still be usable in a blocking context**.
 
 Synopsis
 ========
 
-Consider the following asyncio program that sends and receives messages
-from an echo server::
+Consider the following multithreaded program, which sends and receives messages
+from an echo server.  The program is organized into three layers:
+
+* ``send_receive_implementation`` - this is a low level layer that interacts
+  with the Python ``socket`` library directly
+
+* ``send_receive_logic`` - this is logic code that responds to requests to
+  send and receive messages, given an implementation function
+
+* ``send_receive_api`` - this is the front-facing API that is used by programs.
+
+We present this example below, adding a ``main()`` function that spins up
+five threads and calls upon ``send_receive_api()`` independently within each::
+
+    import socket
+    import threading
+
+    messages = []
+
+    def send_receive_implementation(host, port, message):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((host, port))
+        sock.sendall(message.encode("ascii"))
+        return sock.recv(1024).decode("utf-8")
+
+    def send_receive_logic(msg, host, port, implementation):
+        return implementation(
+            host, port, f"message number {msg}\n"
+        )
+
+    def send_receive_api(msg):
+        messages.append(
+            send_receive_logic(msg, "tcpbin.com", 4242, send_receive_implementation)
+        )
+
+    def main():
+        threads = [
+            threading.Thread(target=send_receive_api, args=(msg,))
+            for msg in ["one", "two", "three", "four", "five"]
+        ]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        for msg in messages:
+            print(f"Got back echo response: {msg}")
+
+
+    main()
+
+The goal we have now is to provide an all-new asynchronous API to this program.
+That is, we want to remove the use of threads, and instead have calling code which
+looks like this::
+
+    async def main():
+        messages = await asyncio.gather(
+            *[
+                message_api(msg) for msg in
+                ["one", "two", "three", "four", "five"]
+            ]
+        )
+        for msg in messages:
+            print(f"Got back echo response: {msg}")
+
+    asyncio.run(main())
+
+To do this, we would need to rewrite all of the above functions to use
+``async`` and ``await``.   But what if the vast majority of our code were
+within ``send_receive_logic()`` - that code is only a pass through, receiving
+data to and from an opaque implementation.  Must we convert **all** our code
+everywhere that acts as "pass through" to use ``async`` ``await``?
+
+With awaitlet, we dont have to.   awaitlet provides a **functional form
+of the Python await call**, which can be invoked from non-async functions,
+within an overall asyncio context.    We can port our program above by:
+
+* Writing a new ``send_receive_implementation`` function that uses asyncio, rather than sync
+* Writing a new ``send_receive_api`` that uses asyncio
+* Writing a sync adapter that can be passed along to ``send_receive_logic``
+
+This program then looks like::
 
     import asyncio
+    import awaitlet
+    import functools
 
-    async def sendrecv(msg):
-        reader, writer = await asyncio.open_connection("tcpbin.com", 4242)
-        writer.write(f"message number {msg}\n".encode("ascii"))
+    messages = []
+
+
+    async def async_send_receive_implementation(host, port, message):
+        reader, writer = await asyncio.open_connection(host, port)
+        writer.write(message.encode("ascii"))
         await writer.drain()
         data = (await reader.read(1024)).decode("utf-8")
         return data
 
 
+    def send_receive_logic(msg, host, port, implementation):
+        return implementation(host, port, f"message number {msg}\n")
+
+
+    async def send_receive_api(msg):
+        return await awaitlet.async_def(
+            send_receive_logic,
+            msg,
+            "tcpbin.com",
+            4242,
+            lambda host, port, message: awaitlet.awaitlet(
+                async_send_receive_implementation(host, port, message)
+            ),
+        )
+
     async def main():
         messages = await asyncio.gather(
             *[
-                sendrecv(msg) for msg in
-                ["one", "two", "three", "four", "five"]
+                send_receive_api(msg)
+                for msg in ["one", "two", "three", "four", "five"]
             ]
         )
         for msg in messages:
             print(f"Got back echo response: {msg}")
 
-    asyncio.run(main())
-
-What if ``sendrecv`` above wanted to be a function available in existing
-code that didn't use ``async``?   With awaitlet we can remove the ``async``
-keyword and still have a way of invoking ``async`` awaitables inside
-of it::
-
-
-    import asyncio
-    from awaitlet import async_def
-    from awaitlet import awaitlet
-
-    def sendrecv_implementation(msg):
-        reader, writer = awaitlet(asyncio.open_connection("tcpbin.com", 4242))
-        writer.write(f"message number {msg}\n".encode("ascii"))
-        awaitlet(writer.drain())
-        data = (awaitlet(reader.read(1024))).decode("utf-8")
-        return data
-
-    async def sendrecv(msg):
-        return await async_def(sendrecv_implementation, msg)
-
-    async def main():
-        messages = await asyncio.gather(
-            *[
-                sendrecv(msg) for msg in
-                ["one", "two", "three", "four", "five"]
-            ]
-        )
-        for msg in messages:
-            print(f"Got back echo response: {msg}")
 
     asyncio.run(main())
 
-
-
+Above, the front end and back end are ported to asyncio, but the
+**middle part stays the same**.  That's the point of awaitlet; **to eliminate
+the async/await keyword tax when porting**.
