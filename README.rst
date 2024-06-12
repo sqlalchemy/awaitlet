@@ -42,9 +42,7 @@ five threads and calls upon ``send_receive_api()`` independently within each:
         return sock.recv(1024).decode("utf-8")
 
     def send_receive_logic(msg, host, port, implementation):
-        return implementation(
-            host, port, f"message number {msg}\n"
-        )
+        return implementation(host, port, f"message number {msg}\n")
 
     def send_receive_api(msg):
         messages.append(
@@ -145,6 +143,7 @@ This program then looks like:
     asyncio.run(main())
 
 Above, the front end and back end are ported to asyncio, but the
-**middle part stays the same**.  That's the point of awaitlet; **to eliminate
+middle part stays the same; that is, the ``send_receive_logic()`` function 
+**did not change at all, no async/await keywords needed**.  That's the point of awaitlet; **to eliminate
 the async/await keyword tax applied to code that doesnt directly invoke
 non-blocking functions.**.
