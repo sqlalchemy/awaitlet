@@ -1,0 +1,6 @@
+recursive-include **/tests *.py  
+recursive-include examples *
+include README* LICENSE changelog.rst tox.ini connmon.png
+
+
+

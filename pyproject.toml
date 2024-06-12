@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sqlalchemy-awaitlet"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+dynamic = ["version"]
+authors = [{ name = "Mike Bayer", email = "mike_mp@zzzcomputing.com" }]
+description = "invoke asyncio awaitables from non-async functions"
+keywords = ["asyncio"]
+license = {file = "LICENSE"}
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "greenlet"
+]
+
+[tool.setuptools.packages]
+find = {}  # Scanning implicit namespaces is active by default
+
+[project.urls]
+Homepage = "https://github.com/sqlalchemy/awaitlet"
+
+
+[tool.mypy]
+mypy_path = "./awaitlet/"
+strict = false
+show_error_codes = true
+incremental = true
+
+
+[tool.black]
+line-length = 79
+target-version = ['py38']
+
+
+[tool.pytest.ini_options]
+addopts = "--tb native -v -r sfxX -p warnings -p logging --strict-markers"
+python_files = "tests/test_*.py"
