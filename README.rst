@@ -106,8 +106,6 @@ This program then looks like:
     import awaitlet
     import functools
 
-    messages = []
-
 
     async def async_send_receive_implementation(host, port, message):
         reader, writer = await asyncio.open_connection(host, port)
