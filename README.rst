@@ -146,7 +146,7 @@ Above, the front end and back end are ported to asyncio, but the
 middle part stays the same; that is, the ``send_receive_logic()`` function 
 **did not change at all, no async/await keywords needed**.  That's the point of awaitlet; **to eliminate
 the async/await keyword tax applied to code that doesnt directly invoke
-non-blocking functions.**.
+non-blocking functions.**
 
 How does this work?
 ===================
