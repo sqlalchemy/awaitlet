@@ -82,6 +82,7 @@ def awaitlet(awaitable: Awaitable[_T]) -> _T:
     # a coroutine to run. Once the awaitable is done, the driver greenlet
     # switches back to this greenlet with the result of awaitable that is
     # then returned to the caller (or raised as error)
+    assert current.parent
     return current.parent.switch(awaitable)  # type: ignore[no-any-return]
 
 

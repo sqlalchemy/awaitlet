@@ -112,6 +112,7 @@ def _format_argspec_plus(
        'apply_pos': '(self, a, b, c, **d)'}
 
     """
+    spec: FullArgSpec | inspect.FullArgSpec
     if callable(fn):
         spec = inspect.getfullargspec(fn)
     else:
