@@ -6,11 +6,11 @@ import sys
 from typing import Any
 from typing import Coroutine
 from typing import Literal
-from typing import Self
 from typing import TypeVar
 from typing import Union
 
 from .langhelpers import _pytest_fn_decorator
+from .typing import Self
 
 _T = TypeVar("_T", bound=Any)
 

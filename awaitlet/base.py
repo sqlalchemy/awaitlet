@@ -7,10 +7,11 @@ from typing import Awaitable
 from typing import Callable
 from typing import Coroutine
 from typing import TYPE_CHECKING
-from typing import TypeGuard
 from typing import TypeVar
 
 from greenlet import greenlet
+
+from .util.typing import TypeGuard
 
 _T = TypeVar("_T")
 

@@ -21,7 +21,8 @@ classifiers = [
 ]
 
 dependencies = [
-    "greenlet"
+    "greenlet",
+    "typing-extensions >= 4.6.0",
 ]
 
 [tool.setuptools.packages]
