@@ -28,6 +28,9 @@ dependencies = [
 [tool.setuptools.packages]
 find = {}  # Scanning implicit namespaces is active by default
 
+[tool.setuptools.dynamic]
+version = {attr = "awaitlet.__version__"}
+
 [project.urls]
 Homepage = "https://github.com/sqlalchemy/awaitlet"
 
