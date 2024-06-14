@@ -161,7 +161,5 @@ class TestAsyncioCompat:
 
         assert (await async_def(run)) == 2
 
-        with expect_raises(
-            NoAwaitOccurred,
-        ):
+        with expect_raises(NoAwaitOccurred):
             await async_def(run, assert_await_occurs=True)

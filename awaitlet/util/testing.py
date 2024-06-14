@@ -9,7 +9,6 @@ from typing import Literal
 from typing import TypeVar
 from typing import Union
 
-from .langhelpers import _pytest_fn_decorator
 from .typing import Self
 
 _T = TypeVar("_T", bound=Any)
@@ -25,9 +24,8 @@ def ne_(a, b, msg=None):
     assert a != b, msg or "%r == %r" % (a, b)
 
 
-def _run_coroutine_function(fn, *args, **kwargs):
-    runner = _Runner()  # runner it lazy so it can be created here
-    return runner.run(fn(*args, **kwargs))
+def run_coroutine_function(fn, *args, **kwargs):
+    return _runner.run(fn(*args, **kwargs))
 
 
 class _Runner:
@@ -71,13 +69,10 @@ class _Runner:
             self._loop = asyncio.new_event_loop()
 
 
-def async_test(fn):
+_runner = _Runner()  # runner it lazy so it can be created here
 
-    @_pytest_fn_decorator
-    def decorate(fn, *args, **kwargs):
-        _run_coroutine_function(fn, *args, **kwargs)
 
-    return decorate(fn)
+async_test: Any = None  # assigned by conftest
 
 
 class _ErrorContainer:
