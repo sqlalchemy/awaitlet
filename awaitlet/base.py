@@ -63,8 +63,8 @@ def _safe_cancel_awaitable(awaitable: Awaitable[Any]) -> None:
 def awaitlet(awaitable: Awaitable[_T]) -> _T:
     """Awaits an async function in a sync method.
 
-    The sync method must be inside a :func:`greenlet_spawn` context.
-    :func:`await_` calls cannot be nested.
+    The sync method must be inside a :func:`async_def` context.
+    :func:`awaitlet` calls cannot be nested.
 
     :param awaitable: The coroutine to call.
 
@@ -95,7 +95,7 @@ async def async_def(
 ) -> _T:
     """Runs a sync function ``fn`` in a new greenlet.
 
-    The sync function can then use :func:`await_` to wait for async
+    The sync function can then use :func:`awaitlet` to wait for async
     functions.
 
     :param fn: The sync callable to call.
@@ -106,7 +106,7 @@ async def async_def(
     result: Any
     context = _AsyncIoGreenlet(fn, greenlet.getcurrent())
     # runs the function synchronously in gl greenlet. If the execution
-    # is interrupted by await_, context is not dead and result is a
+    # is interrupted by awaitlet, context is not dead and result is a
     # coroutine to wait. If the context is dead the function has
     # returned, and its result can be returned.
     switch_occurred = False
@@ -114,7 +114,7 @@ async def async_def(
     while not context.dead:
         switch_occurred = True
         try:
-            # wait for a coroutine from await_ and then return its
+            # wait for a coroutine from awaitlet and then return its
             # result back to it.
             value = await result
         except BaseException:
