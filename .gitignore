@@ -2,6 +2,7 @@
 *.pyo
 *.egg
 *.db
+docs/build/output
 /build/
 /dist/
 *.orig
