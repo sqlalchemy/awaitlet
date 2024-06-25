@@ -3,3 +3,6 @@ git+https://github.com/sqlalchemyorg/sphinx-paramlinks.git#egg=sphinx-paramlinks
 sphinx
 greenlet
 typing_extensions
+sphinx_copybutton==0.5.1
+
+
