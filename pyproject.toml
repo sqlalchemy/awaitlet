@@ -37,6 +37,7 @@ version = {attr = "awaitlet.__version__"}
 
 [project.urls]
 Homepage = "https://github.com/sqlalchemy/awaitlet"
+Documentation = "https://awaitlet.sqlalchemy.org"
 
 
 [tool.mypy]
