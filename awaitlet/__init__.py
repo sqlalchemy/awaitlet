@@ -4,4 +4,4 @@ from .base import NoAwaitletContext as NoAwaitletContext
 from .base import NoAwaitOccurred as NoAwaitOccurred
 
 
-__version__ = "0.0.2"
+__version__ = "0.0.1"
