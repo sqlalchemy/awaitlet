@@ -37,7 +37,18 @@ extensions = [
     "sphinx.ext.intersphinx",
     "changelog",
     "sphinx_paramlinks",
+    "sphinx_copybutton",
 ]
+
+copybutton_prompt_text = (
+    r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+)
+copybutton_prompt_is_regexp = True
+# workaround
+# https://sphinx-copybutton-exclude-issue.readthedocs.io/en/v0.5.1-go/
+# https://github.com/executablebooks/sphinx-copybutton/issues/185
+copybutton_exclude = ".linenos"
+
 
 changelog_sections = ["feature", "usecase", "bug"]
 
