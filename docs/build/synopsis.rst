@@ -149,13 +149,16 @@ invoke non-blocking functions.**
 Detailed Breakdown
 ==================
 
-The whole approach of awaitlet is overall a little bit of a "dark art".   It
+The whole approach of awaitlet is overall a little bit of a "dark art" (though
+actually less "dark" than what gevent and eventlet
+have done for decades).  It
 takes a standard and pretty well known part of Python, the ``asyncio``
 library, and adds some syntactical helpers that were not intended to be part
 of asyncio itself.   Inspired by libraries like gevent and eventlet, awaitlet
 makes use of greenlet in a similar way as those libraries do, but then makes
 use of asyncio for non-blocking primitives, rather than going through the
-effort of creating its own the way gevent and eventlet do.
+effort of creating its own and often needing to monkeypatch them into the standard
+library the way gevent and eventlet do.
 
 The :func:`.async_def` function call is an awaitable that when invoked,
 internally starts up a greenlet that can be used to "context switch" to
@@ -172,9 +175,9 @@ other greenlets anywhere within the execution of that greenlet::
 
         return await my_awaitable
 
-Above, the ``send_receive_logic()`` function is called within a greenlet, but
-not before first before we enter into an actual async def that's behind
-the scenes::
+Above, the ``send_receive_logic()`` function is called within a greenlet that
+itself links to a parent greenlet that's local to the :func:`.async_def`
+callable (this is the normal way that greenlet works)::
 
     async def async_def(
         fn: Callable[..., _T],
@@ -184,51 +187,25 @@ the scenes::
     ) -> _T:
         """Runs a sync function ``fn`` in a new greenlet."""
 
-        # make a greenlet.greenlet with the given function
+        # make a greenlet.greenlet with the given function.
+        # getcurrent() is the parent greenlet that is basically where we
+        # are right now in the function
         context = _AsyncIoGreenlet(fn, greenlet.getcurrent())
 
-        # switch into it (start the function)
+        # switch into the new greenlet (start the function)
         result = context.switch(*args, **kwargs)
 
         # ... continued ...
 
-Then, whenever some part of ``send_receive_logic()`` or some sub-function within
-it calls upon :func:`.awaitlet`, that goes back into awaitlet's greenlet code
-and uses ``greenlet.switch()`` to **context switch** back out into the behind-the-scenes
-async function, below illustrated in a simplified form of the actual code::
-
-    async def async_def(
-        fn: Callable[..., _T],
-        *args: Any,
-        assert_await_occurs: bool = False,
-        **kwargs: Any,
-    ) -> _T:
-        """Runs a sync function ``fn`` in a new greenlet."""
-
-        # make a greenlet.greenlet with the given function
-        context = _AsyncIoGreenlet(fn, greenlet.getcurrent())
-
-        # switch into it (start the function)
-        result = context.switch(*args, **kwargs)
-
-        # we're back!  is the context not dead ? (e.g. the funciton has more
-        # code to run?)
-        while not context.dead:
-            # wait for a coroutine from awaitlet and then return its
-            # result back to it.
-            value = await result
-
-            # then switch back in!  (in reality there's error handling here also)
-            result = context.switch(value)
-
 When this line of code is first called::
 
-    # switch into it (start the function)
+    # switch into the new greenlet (start the function)
     result = context.switch(*args, **kwargs)
 
-It blocks while our function runs.   Only when our function exits or
-calls :func:`.awaitlet` do we hit the next line.   If the function calls
-:func:`.awaitlet`, awaitlet looks like this::
+It runs the given function, and blocks until the function is complete.
+However, within the function (which is our ``send_receive_logic()`` call),
+that function can call upon Python awaitables using :func:`.awaitlet`.
+:func:`.awaitlet` looks like this::
 
     def awaitlet(awaitable: Awaitable[_T]) -> _T:
         """Awaits an async function in a sync method."""
@@ -236,18 +213,65 @@ calls :func:`.awaitlet` do we hit the next line.   If the function calls
         current = greenlet.getcurrent()
         return current.parent.switch(awaitable)
 
-That is, it does nothing but greenlet switch **back to the parent greenlet**,
+That is, it does nothing but context switch **back to the parent greenlet**,
 which means back outside of the ``context.switch()`` that got us here.
 The returned value is a real Python awaitable.  So inside
-of the ``async_def()`` funciton, we await it on behalf of our hosted function::
+of the ``async_def()`` function, we check that the inner function is not
+complete yet, we then assume the result must be an awaitable, and we await it
+on behalf of our hosted function - remember, we're in a real ``async def``
+at this level::
 
+    # switch into the new greenlet (start the function)
+    result = context.switch(*args, **kwargs)
+
+    # loop for the function not done yet
     while not context.dead:
         # await on the result that we expect is awaitable
         value = await result
 
-We send the result of the awaitable **back into the hosted function and
-context switch back**::
+With the awaitable completed, we send the result of
+the awaitable **back into the hosted function and context switch back**::
 
-    result = context.switch(value)
+    # switch into the new greenlet (start the function)
+    result = context.switch(*args, **kwargs)
 
-Minus some more robustness details, that's the whole thing!
+    # loop for the function not done yet
+    while not context.dead:
+        # await on the result that we expect is awaitable
+        value = await result
+
+        # pass control back into the function, with the return value
+        # of the awaitable
+        result = context.switch(value)
+
+The ``value`` passed in becomes the **return value of the awaitlet() call**::
+
+    def awaitlet(awaitable: Awaitable[_T]) -> _T:
+        # ...
+
+        return current.parent.switch(awaitable)
+
+and we are then back in the hosted function with an awaitable having proceeded
+and its return value passed back from the :func:`.awaitlet` call.
+
+The loop continues; each time ``context.dead`` is False, we know that
+``result`` is yet another Python awaitable.   Once ``context.dead`` is
+True, then we know the function completed; we return the result!
+
+.. sourcecode::
+
+    # switch into it (start the function)
+    result = context.switch(*args, **kwargs)
+
+    # loop for the function not done yet
+    while not context.dead:
+        # await on the result that we expect is awaitable
+        value = await result
+
+        result = context.switch(value)
+
+    # no more awaits; so this is the result!
+    return result
+
+
+Minus error handling and some other robustness details, that's the whole thing!
