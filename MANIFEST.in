@@ -1,6 +1,8 @@
-recursive-include **/tests *.py  
-recursive-include examples *
-include README* LICENSE changelog.rst tox.ini connmon.png
+recursive-include docs *.html *.css *.txt *.js *.jpg *.png *.py Makefile *.rst *.sty
+recursive-include tests *.py *.dat *.pyi
+recursive-include README *.py *.pyi
+recursive-include awaitlet *.py *.pyi py.typed
 
+include README* LICENSE CHANGES* tox.ini
 
-
+prune docs/build/output
