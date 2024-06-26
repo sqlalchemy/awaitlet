@@ -175,8 +175,8 @@ html_css_files = ["site_custom_css.css"]
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
     "**": [
-        "site_custom_sidebars.html",
         "navbar-logo.html",
+        "site_custom_sidebars.html",
         "icon-links.html",
         "search-button-field.html",
         "sbt-sidebar-nav.html",
