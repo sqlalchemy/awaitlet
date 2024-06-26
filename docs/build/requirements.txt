@@ -4,5 +4,7 @@ sphinx
 greenlet
 typing_extensions
 sphinx_copybutton==0.5.1
+sphinx-book-theme
+
 
 
