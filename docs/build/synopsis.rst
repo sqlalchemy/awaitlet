@@ -178,8 +178,8 @@ other greenlets anywhere within the execution of that greenlet::
 Above, the ``send_receive_logic()`` function is called within a greenlet that
 itself links to a parent greenlet that's local to the :func:`.async_def`
 function (this is the normal way that greenlet works).  Below we illustrate
-a **simplified** version of :func:`.async_def` that does not include details
-like exception handling and other robustness regarding arguments::
+a **simplified** version of :func:`.async_def` that does not include things
+like exception handling and other implementation details::
 
     async def async_def(
         fn: Callable[..., _T],
@@ -275,7 +275,6 @@ True, then we know the function completed; we return the result!
     # no more awaits; so this is the result!
     return result
 
-The real function has a more elements within the loop to accommodate for
-exceptions thrown from the callable, as well as other features to check that
-awaitables ran if this was expected.   But minus those details, the single loop
-is pretty much the whole thing!
+The real function includes additional implementation details, including
+accommodation for exceptions thrown from the callable.   But overall, the loop
+approach illustrated above is pretty much the whole thing!
