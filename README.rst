@@ -10,6 +10,19 @@ asyncio compatible approaches, but allowing intermediary code to remain
 completely unchanged.  Its primary use is to support code that is cross-compatible
 with asyncio and non-asyncio runtime environments.
 
+The entire API demonstrated in three lines, where a non ``async`` def can
+be invoked in an asyncio context and can then call upon real awaitables
+directly::
+
+    import asyncio
+
+    import awaitlet
+
+    def asyncio_sleep():
+        return awaitlet.awaitlet(asyncio.sleep(5, result='hello'))
+
+    print(asyncio.run(awaitlet.async_def(asyncio_sleep)))
+
 awaitlet is intentionally fully compatible with SQLAlchemy's asyncio mediation
 layer, and includes API patterns for:
 

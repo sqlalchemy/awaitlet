@@ -36,8 +36,8 @@ API patterns for:
   SQLAlchemy's synchronous API for database access
 
 The two functions provided are :func:`.async_def` and :func:`.awaitlet`.  Using
-these, we can create an asyncio program using intermediary defs that do not use the `async`
-or `await` keywords, but instead use functions::
+these, we can create an asyncio program using intermediary defs that do not use the ``async``
+or ``await`` keywords, but instead use functions::
 
    import asyncio
 
@@ -74,6 +74,7 @@ Contents in this Document
 .. toctree::
    :maxdepth: 2
 
+   front
    synopsis
    sqlalchemy
    api
