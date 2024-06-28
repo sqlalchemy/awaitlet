@@ -17,7 +17,11 @@ Awaitlet is a direct extract of SQLAlchemy's own `asyncio mediation layer
 dependencies on SQLAlchemy (but is also fully cross-compatible with
 SQLAlchemy's mediation layer).   This code has been in widespread production
 use in thousands of environments for several years, starting in 2020 with
-SQLAlchemy 1.4's first release.
+SQLAlchemy 1.4's first release.     The library provides for the identical use
+case as another library that was first released around the same time as
+SQLAlchemy 1.4 called `greenback <https://pypi.org/project/greenback/>`_, but
+as part of the SQLAlchemy project is guaranteed to remain cross-compatible with
+non-blocking SQLAlchemy code.
 
 awaitlet without any dependency or use of SQLAlchemy includes API patterns for:
 

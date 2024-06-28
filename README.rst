@@ -23,6 +23,12 @@ directly::
 
     print(asyncio.run(awaitlet.async_def(asyncio_sleep)))
 
+awaitlet is spun out from SQLAlchemy's own `asyncio mediation layer
+<https://docs.sqlalchemy.org/en/latest/orm/extensions/asyncio.html>`_, with no
+dependencies on SQLAlchemy itself.  awaitlet may be compared with another
+equivalent library `greenback <https://pypi.org/project/greenback/>`_ which was
+released at roughly the same time as SQLAlchemy's asyncio API.
+
 awaitlet is intentionally fully compatible with SQLAlchemy's asyncio mediation
 layer, and includes API patterns for:
 
